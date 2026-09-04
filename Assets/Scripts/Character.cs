@@ -9,10 +9,8 @@ public class Character : MonoBehaviour
     [SerializeField] private float walkSpeed = 1f;
     [SerializeField] private float runSpeed = 2f;
 
-
     private float currentSpeed = 0.0f;
-  
-    private bool isRunning = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,52 +20,46 @@ public class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-      
- Vector3 move = Vector3.zero;
+        Vector3 move = Vector3.zero;
 
-    if (Keyboard.current.wKey.isPressed) move.z += 1f;
-    if (Keyboard.current.sKey.isPressed) move.z -= 1f;
-    if (Keyboard.current.dKey.isPressed) move.x += 1f;
-    if (Keyboard.current.aKey.isPressed) move.x -= 1f;
+        if (Keyboard.current.wKey.isPressed) move.z += 1f;
+        if (Keyboard.current.sKey.isPressed) move.z -= 1f;
+        if (Keyboard.current.dKey.isPressed) move.x += 1f;
+        if (Keyboard.current.aKey.isPressed) move.x -= 1f;
 
-    move = move.normalized;
+        move = move.normalized;
 
-    if(Keyboard.current.spaceKey.isPressed)
+        // 常に走り状態
+        currentSpeed = runSpeed;
+
+        if (move.magnitude >= 0.1f)
         {
-            isRunning = true;
-            Camera.main.fieldOfView = isRunning ? 75f : 60f;
+            // カメラ方向ベースで移動
+            Vector3 forward = transform.forward;
+            Vector3 right = transform.right;
+
+            Vector3 moveDir = forward * move.z + right * move.x;
+
+            transform.position += moveDir * currentSpeed * Time.deltaTime;
         }
-    else
-        {
-            isRunning = false;
-        }
-    if (move.magnitude >= 0.1f)
-    {
-        currentSpeed = isRunning ? runSpeed : walkSpeed;
-
-        // ★ カメラ方向ベースで移動！
-        Vector3 forward = transform.forward;
-        Vector3 right = transform.right;
-
-        Vector3 moveDir = forward * move.z + right * move.x;
-
-        transform.position += moveDir * currentSpeed * Time.deltaTime;
-        
-
-
-    }
-
         else
         {
             currentSpeed = 0.0f;
-            isRunning = false;
         }
 
-        //if (animator != null)
-        //        {
-        //            animator.SetFloat("Speed", currentSpeed);
-        //        }
-            
-        
+        // 攻撃アニメーション（左クリック）
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            if (animator != null)
+            {
+                animator.SetTrigger("Attack");
+            }
+        }
+
+        // アニメーションの速度更新
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", currentSpeed);
+        }
     }
 }
